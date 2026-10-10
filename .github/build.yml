@@ -1,0 +1,37 @@
+# Cara pakai (dari HP, lewat browser):
+# 1) Buat repo GitHub baru. 2) Add file > Upload files > unggah TEIN.zip (jangan diekstrak).
+# 3) Add file > Create new file > nama: .github/workflows/build.yml > tempel isi file ini > Commit.
+# 4) Tab Actions > "Build TEIN dari ZIP" > Run workflow. Tunggu ±5-8 menit.
+# 5) Buka run yang selesai > Artifacts > TEIN-apk (berisi app-debug.apk) > unduh dan pasang.
+name: Build TEIN dari ZIP
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ekstrak project
+        run: |
+          unzip -q TEIN.zip -d proj
+          ls proj
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.5'
+
+      - name: Build APK
+        working-directory: proj/TEIN
+        run: gradle :app:assembleDebug --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TEIN-apk
+          path: proj/TEIN/app/build/outputs/apk/debug/*.apk
